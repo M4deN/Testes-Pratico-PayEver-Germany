@@ -4,7 +4,7 @@
   "description": "",
   "main": "TestPayEver.js",
   "scripts": {
-    "test": "TestPayEver.js"
+    "test": "node TestPayEver.js"
   },
   "author": "",
   "license": "ISC",

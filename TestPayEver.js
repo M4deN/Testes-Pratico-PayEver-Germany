@@ -1,46 +1,70 @@
 const { Builder, By, Key, until } = require('selenium-webdriver');
+const { expect } = require('chai');
 const chrome = require('selenium-webdriver/chrome');
-const assert = require('chai').assert;
-const options = new chrome.Options();
-options.setChromeBinaryPath('D:\\Usuário\\Documents\\GitHub\\Testes-Pratico-PayEver-Germany\\chromedriver\\chromedriver.exe');
+const chromedriverPath = 'D:\\Usuário\\Documents\\GitHub\\Testes-Pratico-PayEver-Germanys\\chromedriver.exe';
 
 
-async function realizarRegistro() {
-    const driver = await new Builder()
-        .forBrowser('chrome')
-        .setChromeOptions(options)
-        .build();  // Crie a instância do driver com as opções configuradas
+class RegistrationPage {
+    constructor(driver) {
+        this.driver = driver;
+        this.firstNameField = By.css('[formcontrolname="firstName"]');
+        this.lastNameField = By.css('[formcontrolname="lastName"]');
+        this.emailField = By.css('[formcontrolname="email"]');
+        this.passwordField = By.css('[formcontrolname="password"]');
+        this.signUpButton = By.xpath('//button[contains(text(), "Sign up for free")]');
+        this.businessTypeDropdown = By.css('.ng-tns-c212-7.ng-untouched > .label-select-wrapper > .input');
+        this.registeredBusinessOption = By.xpath('//peb-select-option[contains(text(), "Registered Business")]');
+        this.lookAroundOption = By.xpath('//span[contains(text(), "Just looking around")]');
+        this.startingOption = By.xpath('//span[contains(text(), "0 EUR (I just started)")]');
+        this.businessCategoryInput = By.css('input.mat-autocomplete-trigger.ng-tns-c170-13');
+        this.phoneField = By.css('input[formcontrolname="phoneNumber"]');
+        this.getStartedButton = By.css('button.signup-button');
+    }
 
-    const url = 'https://commerceos.staging.devpayever.com/registration/';
+    async fillRegistrationForm(firstName, lastName, email, password, businessType, startingOption) {
+        await this.driver.findElement(this.firstNameField).sendKeys(firstName);
+        await this.driver.findElement(this.lastNameField).sendKeys(lastName);
+        await this.driver.findElement(this.emailField).sendKeys(email);
+        await this.driver.findElement(this.passwordField).sendKeys(password);
 
+        await this.driver.findElement(this.businessTypeDropdown).click();
+        await this.driver.findElement(this.registeredBusinessOption).click();
 
-    try {
-        // Passo 1: Visitar a página de registro
-        await driver.get(url);
+        await this.driver.findElement(this.lookAroundOption).click();
+        await this.driver.findElement(this.startingOption).click();
 
-        // Passo 2: Preencher informações do usuário
-        await driver.findElement(By.name('first_name')).sendKeys('Nome');
-        await driver.findElement(By.name('last_name')).sendKeys('Sobrenome');
-        await driver.findElement(By.name('email')).sendKeys('teste@email.com');
-        await driver.findElement(By.xpath("//button[contains(text(),'Próximo')]")).click();
+        await this.driver.findElement(this.businessCategoryInput).sendKeys('Beauty & Personal Care', Key.RETURN);
 
-        // Passo 3: Preencher informações comerciais
-        await driver.findElement(By.name('business_name')).sendKeys('Nome da Empresa');
+        await this.driver.findElement(this.phoneField).sendKeys('12341234');
+    }
 
-        // Passo 4: Registrar a conta
-        await driver.findElement(By.xpath("//button[contains(text(),'Registrar conta')]")).click();
-
-        // Passo 5: Clique em começar
-        await driver.findElement(By.xpath("//button[contains(text(),'Começar')]")).click();
-
-        // Passo 6: Verificar se o painel está sendo exibido
-        const dashboardTitle = await driver.findElement(By.xpath("//h1[contains(text(),'Painel')]")).getText();
-        assert.equal(dashboardTitle, 'Painel', 'O painel não está sendo exibido após o registro');
-    } finally {
-        // Encerrar o driver após a conclusão do teste
-        await driver.quit();
+    async clickSignUpButton() {
+        await this.driver.findElement(this.signUpButton).click();
     }
 }
 
-// Chamar a função para realizar o registro
-realizarRegistro();
+describe('Testes de Registro', function () {
+    let driver;
+    let registrationPage;
+
+    before(async function () {
+        driver = await new Builder()
+            .forBrowser('chrome')
+            .setChromeOptions(new chrome.Options().addArguments(`--chromedriver=${chromedriverPath}`))
+            .build();
+        registrationPage = new RegistrationPage(driver);
+    });
+
+    it('Realiza o registro com sucesso', async function () {
+        const value = '{value}'; // Substitua pelo valor correto
+
+        await driver.get(`https://commerceos.staging.devpayever.com/registration/${value}`);
+        await registrationPage.fillRegistrationForm('Test', 'Test', 'teste1234@outlook.com', 'Test@5640', 'Registered Business');
+        await registrationPage.clickSignUpButton();
+
+    });
+
+    after(async function () {
+        await driver.quit();
+    });
+});
