@@ -56,8 +56,7 @@ describe('Testes de Registro', function () {
     });
 
     it('Realiza o registro com sucesso', async function () {
-        const value = '{value}'; // Substitua pelo valor correto
-
+        const value = '{value}';
         await driver.get(`https://commerceos.staging.devpayever.com/registration/${value}`);
         await registrationPage.fillRegistrationForm('Test', 'Test', 'teste1234@outlook.com', 'Test@5640', 'Registered Business');
         await registrationPage.clickSignUpButton();
